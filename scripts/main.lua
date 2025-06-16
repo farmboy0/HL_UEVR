@@ -18,7 +18,9 @@ require("helpers/crosshair")
 --hands.setLogLevel(LogLevel.Debug)
 -- flickerFixer.setLogLevel(LogLevel.Debug)
 -- gesturesModule.setLogLevel(LogLevel.Debug)
-uevrUtils.setLogLevel(LogLevel.Debug)
+--uevrUtils.setLogLevel(LogLevel.Debug)
+
+local version = "1.08"
 
 local isInCinematic = false
 local isInAlohomora = false
@@ -84,6 +86,7 @@ function UEVRReady(instance)
 	uevr.params.vr.set_mod_value("VR_DecoupledPitchUIAdjust","false")
 	
 	config.init()
+	configui.setLabel("versionTxt", "Hogwarts Legacy First Person Mod v" ..  version)
 	initLevel()	
 	preGameStateCheck()
 	hookLateFunctions()

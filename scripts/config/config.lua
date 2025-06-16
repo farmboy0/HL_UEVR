@@ -30,7 +30,7 @@ Gesture Mode
 GestureMode.None = No gestures
 GestureMode.Spells = Spells can be cast by drawing glyphs. Wrist flick casts previous spell
 ]]--
-gestureMode = GestureMode.Spells
+gestureMode = GestureMode.None
 
 --[[
 Use Crosshair 
@@ -126,6 +126,11 @@ local configDefinition = {
 		layout = 
 		{
 			{
+				widgetType = "text",
+				id = "versionTxt",
+				label = "First Person Mod"
+			},
+			{
 				widgetType = "combo",
 				id = "locomotionMode",
 				selections = {"Game","Head/HMD","Hand/Controller"},
@@ -216,7 +221,7 @@ local configDefinition = {
 				widgetType = "checkbox",
 				id = "virtualMouse",
 				label = "Cursor follows contoller",
-				initialValue = true
+				initialValue = false
 			},
 			{
 				widgetType = "checkbox",
