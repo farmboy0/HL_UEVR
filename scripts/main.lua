@@ -572,7 +572,7 @@ function inPauseMode()
 	return uevrUtils.validate_object(uiManager) ~= nil and uiManager.InPauseMode ~= nil and uiManager:InPauseMode()
 end
 
-function disableUIFollowsView(val)
+function disableUIFollowsView(val, force)
 	if configui.getValue("attachedUI") == true then
 		if val then
 			uevr.params.vr.set_mod_value("UI_FollowView","false")
@@ -583,7 +583,7 @@ function disableUIFollowsView(val)
 			end
 		else
 			--only disable if not in loading screen and not on map screen
-			if not isInLoadingScreen and not (g_fieldGuideUIManager ~= nil and g_lastTabIndex == 6) then
+			if not isInLoadingScreen and not (g_fieldGuideUIManager ~= nil and g_lastTabIndex == 6) and (force == true or not isInMenu) then
 				uevr.params.vr.set_mod_value("UI_FollowView","true")
 				print("Turned on UI_FollowsView")
 			end
@@ -597,7 +597,8 @@ function disableUIFollowsView(val)
 end
 
 function inMenuChanged(val)
-	disableUIFollowsView(val)
+	print("In Menu Changed to ",val)
+	disableUIFollowsView(val, true)
 	-- if configui.getValue("attachedUI") == true then
 		-- if val then
 			-- uevr.params.vr.set_mod_value("UI_FollowView","false")
@@ -922,7 +923,9 @@ function endCinematic()
 			hands.hideHands(false)
 		end
 	end
-	disableUIFollowsView(false)
+	--if not isInMenu then
+		disableUIFollowsView(false)
+	--end
 end
 
 function checkCinematic()
@@ -1208,9 +1211,9 @@ function hookLateFunctions()
 			function(fn, obj, locals, result)
 				print("UI_BP_NewLoadingScreen_C:OnOutroEnded\n")
 				isInLoadingScreen = false
-				if not isInMenu then
+				--if not isInMenu then
 					disableUIFollowsView(false)
-				end
+				--end
 				if not g_isShowingStartPageIntro and not isInFadeIn then
 					uevrUtils.fadeCamera(0.1, false, false, true, false)
 				end
