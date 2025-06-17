@@ -20,7 +20,7 @@ require("helpers/crosshair")
 -- gesturesModule.setLogLevel(LogLevel.Debug)
 --uevrUtils.setLogLevel(LogLevel.Debug)
 
-local version = "1.08"
+local version = "1.08a"
 
 local isInCinematic = false
 local isInAlohomora = false
