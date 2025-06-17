@@ -1054,7 +1054,9 @@ function on_pre_engine_tick(engine, delta)
 		end
 		
 		if not isDecoupledYawDisabled then
-			alphaDiff = decoupledYaw.handleDecoupledYaw(pawn, alphaDiff, wand.isConnected() and lastWandTargetDirection or controllers.getControllerDirection(1), lastHMDDirection, locomotionMode)
+			local targetDirection = nil
+			if wand.isConnected() then targetDirection = lastWandTargetDirection else targetDirection = controllers.getControllerDirection(1) end
+			alphaDiff = decoupledYaw.handleDecoupledYaw(pawn, alphaDiff, targetDirection, lastHMDDirection, locomotionMode)
 		end
 		
 		local mountPawn = mounts.getMountPawn(pawn)

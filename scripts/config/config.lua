@@ -119,6 +119,8 @@ The speed (from 1 to 100) to turn when snap turn is off
 ]]--
 smoothTurnSpeed = 50
 
+wandAimOffset = 0.0
+
 local configDefinition = {
 	{
 		panelLabel = "Hogwarts Config", 
@@ -193,6 +195,14 @@ local configDefinition = {
 				initialValue = manualHideWand
 			},
 			{
+				widgetType = "slider_float",
+				id = "wandAimOffset",
+				label = "Wand Aim Adjustment",
+				speed = 0.1,
+				range = {-10, 10},
+				initialValue = 0.0
+			},
+			{
 				widgetType = "checkbox",
 				id = "isFP",
 				label = "First Person View",
@@ -220,7 +230,7 @@ local configDefinition = {
 			{
 				widgetType = "checkbox",
 				id = "virtualMouse",
-				label = "Cursor follows contoller",
+				label = "Cursor follows controller",
 				initialValue = false
 			},
 			{
@@ -251,6 +261,7 @@ function M.loadSettings()
 	useSnapTurn = configui.getValue("useSnapTurn")
 	snapAngle = configui.getValue("snapAngle")
 	smoothTurnSpeed = configui.getValue("smoothTurnSpeed")
+	wandAimOffset = configui.getValue("wandAimOffset")
 	configui.hideWidget("snapAngle", not useSnapTurn)	
 	configui.hideWidget("smoothTurnSpeed", useSnapTurn)	
 	
@@ -269,5 +280,9 @@ function M.loadSettings()
 	print("Smooth Turn Speed:", smoothTurnSpeed, "\n")
 
 end
+
+configui.onUpdate("wandAimOffset", function(value)
+	wandAimOffset = value
+end)
 
 return M

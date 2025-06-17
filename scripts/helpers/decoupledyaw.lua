@@ -1,4 +1,4 @@
-require("config/enum")
+require("config/config")
 
 local M = {}
 
@@ -17,7 +17,7 @@ function setTargetingCameraRotation(pawn, lastWandTargetDirection)
 		end
 		
 		local rotPitch = math.atan(wandTarget.Z/math.sqrt(wandTarget.X^2+wandTarget.Y^2))*180/math.pi
-		temp_vec3f:set(rotPitch,rotYaw+90,0)
+		temp_vec3f:set(rotPitch-3.0+wandAimOffset,rotYaw+90,0)
 		if temp_vec3f.Y ~= temp_vec3f.Y then
 			--print("NAN\n")
 		else
