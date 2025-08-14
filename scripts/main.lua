@@ -270,7 +270,7 @@ function createHands()
 			animation.pose("left_glove", "open_left")
 
 			socketOffsetName = "Reference"
-			if not animation.hasBone(hands.getHandComponent(isLeftHanded and Handed.Left or Handed.Right), "SKT_Reference") then
+			if not animation.hasBone(hands.getHandComponent(g_isLeftHanded and Handed.Left or Handed.Right), "SKT_Reference") then
 				socketOffsetName = "Custom"
 			end
 		else
@@ -287,7 +287,7 @@ end
 function onWandVisibilityChange(isVisible)
 	--uevrUtils.print("Wand visibility changed to " .. (isVisible and "visible" or "hidden"), LogLevel.Info)
 	if hands.exists() then
-		local handStr = isLeftHanded and "left" or "right"
+		local handStr = g_isLeftHanded and "left" or "right"
 		if isVisible then
 			animation.pose(handStr.."_hand", "grip_"..handStr.."_weapon")
 			animation.pose(handStr.."_glove", "grip_"..handStr.."_weapon")
@@ -334,12 +334,12 @@ end
 
 function connectWand()	
 	if showHands and hands.exists() then
-		wand.connectToSocket(mounts.getMountPawn(pawn), hands.getHandComponent(isLeftHanded and Handed.Left or Handed.Right), "WandSocket", getSocketOffset())	
-		local handStr = isLeftHanded and "left" or "right"
+		wand.connectToSocket(mounts.getMountPawn(pawn), hands.getHandComponent(g_isLeftHanded and Handed.Left or Handed.Right), "WandSocket", getSocketOffset())
+		local handStr = g_isLeftHanded and "left" or "right"
 		animation.pose(handStr.."_hand", "grip_"..handStr.."_weapon")		
 		animation.pose(handStr.."_glove", "grip_"..handStr.."_weapon")		
 	else
-		wand.connectToController(mounts.getMountPawn(pawn), isLeftHanded and 0 or 1)
+		wand.connectToController(mounts.getMountPawn(pawn), g_isLeftHanded and 0 or 1)
 	end
 end
 -----------------------------------
@@ -441,8 +441,8 @@ function disableDecoupledYaw(val)
 	isDecoupledYawDisabled =  val
 end
 
-function onHandednessChanged(isLeftHanded)
-	print("Is Left handed",isLeftHanded,"\n")
+function onHandednessChanged()
+	print("Is Left handed",g_isLeftHanded,"\n")
 	disconnectWand()
 	--connectWand()
 end
@@ -452,7 +452,7 @@ function handednessCheck()
 		local val = getIsLeftHanded()
 		if val ~= g_isLeftHanded then
 			g_isLeftHanded = val
-			onHandednessChanged(val)
+			onHandednessChanged()
 		end
 	end
 end
