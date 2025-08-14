@@ -82,30 +82,30 @@ function UEVRReady(instance)
 	--force Ghosting fix for Synced Sequential rendering
 	if uevrUtils.getUEVRParam_int("VR_RenderingMethod") == 1 then uevr.params.vr.set_mod_value("VR_GhostingFix","true") end
 	--force Decoupled Pitch on and Decoupled Pitch UI Adjust off
-	uevr.params.vr.set_decoupled_pitch_enabled(true)	
+	uevr.params.vr.set_decoupled_pitch_enabled(true)
 	uevr.params.vr.set_mod_value("VR_DecoupledPitchUIAdjust","false")
-	
+
 	config.init()
 	configui.setLabel("versionTxt", "Hogwarts Legacy First Person Mod v" ..  version)
-	initLevel()	
+	initLevel()
 	preGameStateCheck()
 	hookLateFunctions()
 	checkStartPageIntro()
-	
+
 	if useCrossHair then
 		createCrosshair()
 	end
-	
+
 	if pawn.InCinematic == true then
 		isInCinematic = true -- This makes the avatar in the intro screen be at the right position
 	else
 		--if injected in a game rather than at the loading screen
 		updatePlayer()
 	end
-	
+
 	--this has to be done here. When done with utils callback the function params dont get changed
 	local prevRotation = {}
-	uevr.params.sdk.callbacks.on_early_calculate_stereo_view_offset(function(device, view_index, world_to_meters, position, rotation, is_double)	
+	uevr.params.sdk.callbacks.on_early_calculate_stereo_view_offset(function(device, view_index, world_to_meters, position, rotation, is_double)
 		--print("Pre angle",view_index, rotation.x, rotation.y, rotation.z,"\n")
 		--Fix for UEVR broken in Intro
 		if rotation ~= nil and rotation.x == -90 and rotation.y == 90 and rotation.z == -90 and prevRotation.X ~= nil and prevRotation.Y ~= nil and prevRotation.Z ~= nil then
@@ -115,20 +115,20 @@ function UEVRReady(instance)
 		end
 		prevRotation = {X=rotation.x, Y=rotation.y, Z=rotation.z}
 		--End fix
-				
-		local success, response = pcall(function()		
+
+		local success, response = pcall(function()
 			if isFP and (not isInCutscene()) and enableVRCameraOffset then
 				if not isDecoupledYawDisabled then
 					rotation.y = decoupledYawCurrentRot
 				end
-								
+
 				local mountPawn = mounts.getMountPawn(pawn)
 				if uevrUtils.validate_object(mountPawn) ~= nil and uevrUtils.validate_object(mountPawn.RootComponent) ~= nil and mountPawn.RootComponent.K2_GetComponentLocation ~= nil then
 					local currentOffset = mounts.getMountOffset()
 					temp_vec3f:set(currentOffset.X, currentOffset.Y, currentOffset.Z) -- the vector representing the offset adjustment
 					temp_vec3:set(0, 0, 1) --the axis to rotate around
 					local forwardVector = kismet_math_library:RotateAngleAxis(temp_vec3f, rotation.y, temp_vec3)
-					local pawnPos = mountPawn.RootComponent:K2_GetComponentLocation()					
+					local pawnPos = mountPawn.RootComponent:K2_GetComponentLocation()
 					position.x = pawnPos.x + forwardVector.X
 					position.y = pawnPos.y + forwardVector.Y
 					position.z = pawnPos.z + forwardVector.Z
@@ -143,19 +143,19 @@ function initLevel()
 	phoenixCameraSettings = nil
 	currentMediaPlayers = nil
 	uiManager = nil
-	
+
 	controllers.onLevelChange()
 	controllers.createController(0)
 	controllers.createController(1)
-	controllers.createController(2) 
-	
+	controllers.createController(2)
+
 	wand.reset()
 	gesturesModule.reset()
 	hands.reset()
 	--connectCube(0)
-	
+
 	flickerFixer.create()
-	
+
 	hookLevelFunctions()
 end
 
@@ -195,8 +195,8 @@ end)
 
 configui.onUpdate("useSnapTurn", function(value)
 	useSnapTurn = value
-	configui.hideWidget("snapAngle", not useSnapTurn)	
-	configui.hideWidget("smoothTurnSpeed", useSnapTurn)	
+	configui.hideWidget("snapAngle", not useSnapTurn)
+	configui.hideWidget("smoothTurnSpeed", useSnapTurn)
 end)
 
 configui.onUpdate("useVolumetricFog", function(value)
@@ -248,7 +248,7 @@ end
 function createHands()
 	--Professor black does not use default pawn mesh
 	if isDisguisedAsProfBlack then
-		hands.setOffset({X=0, Y=0, Z=0, Pitch=0, Yaw=0, Roll=0})	
+		hands.setOffset({X=0, Y=0, Z=0, Pitch=0, Yaw=0, Roll=0})
 		hands.create(pawn.Mesh, profParams, handAnimations)
 		if hands.exists() then
 			animation.pose("right_glove", "open_right")
@@ -258,7 +258,7 @@ function createHands()
 		end
 	else
 		local components = {}
-		hands.setOffset({X=0, Y=0, Z=0, Pitch=0, Yaw=-90, Roll=0})	
+		hands.setOffset({X=0, Y=0, Z=0, Pitch=0, Yaw=-90, Roll=0})
 		for name, def in pairs(handParams) do
 			components[name] = uevrUtils.getChildComponent(pawn.Mesh, name)
 		end
@@ -277,7 +277,7 @@ function createHands()
 			uevrUtils.print("Hand creation failed", LogLevel.Warning)
 		end
 	end
-	
+
 end
 -----------------------------------
 
@@ -317,12 +317,12 @@ function wandCheck()
 		--print(pawn:IsWandEquipped(),pawn:GetWandStyle())
 		local wandStyle = pawn:GetWandStyle():to_string()
 		if g_wandStyle ~= wandStyle then
-			if wandStyle == "ElderWand" then 
+			if wandStyle == "ElderWand" then
 				isWandDisabled = false
 				--connectWand()
 				wand.holsterWand(pawn, true)
 			end
-			if g_wandStyle == "ElderWand" then 
+			if g_wandStyle == "ElderWand" then
 				isWandDisabled = true
 				disconnectWand()
 			end
@@ -332,12 +332,13 @@ function wandCheck()
 end
 
 
-function connectWand()	
+function connectWand()
 	if showHands and hands.exists() then
 		wand.connectToSocket(mounts.getMountPawn(pawn), hands.getHandComponent(g_isLeftHanded and Handed.Left or Handed.Right), "WandSocket", getSocketOffset())
 		local handStr = g_isLeftHanded and "left" or "right"
-		animation.pose(handStr.."_hand", "grip_"..handStr.."_weapon")		
-		animation.pose(handStr.."_glove", "grip_"..handStr.."_weapon")		
+
+		animation.pose(handStr.."_hand", "grip_"..handStr.."_weapon")
+		animation.pose(handStr.."_glove", "grip_"..handStr.."_weapon")
 	else
 		wand.connectToController(mounts.getMountPawn(pawn), g_isLeftHanded and 0 or 1)
 	end
@@ -348,15 +349,15 @@ end
 -----------------------------------
 -- Player functions
 function updatePlayer()
-	setCharacterInFPSView(isFP) 
+	setCharacterInFPSView(isFP)
 	hidePlayer(isFP)
 end
 
 function hidePlayer(state, force)
 	if force == nil then force = false end
 	--print("hidePlayer:  ", state,pawn,isInCinematic,"\n")
-	if (not isInCinematic) or force then	
-		local mountPawn = mounts.getMountPawn(pawn)			
+	if (not isInCinematic) or force then
+		local mountPawn = mounts.getMountPawn(pawn)
 		if uevrUtils.validate_object(mountPawn) ~= nil then
 			local characterMesh = mountPawn.Mesh
 			if uevrUtils.validate_object(characterMesh) ~= nil and characterMesh.SetVisibility ~= nil then
@@ -423,7 +424,7 @@ end
 
 
 function checkStartPageIntro()
-	local startPageWidget = uevrUtils.find_first_of("Class /Script/Phoenix.StartPageWidget") 
+	local startPageWidget = uevrUtils.find_first_of("Class /Script/Phoenix.StartPageWidget")
 	if startPageWidget ~= nil and startPageWidget:IsVisible() then
 		g_isShowingStartPageIntro = true
 	end
@@ -514,15 +515,15 @@ function moveMouse()
 		local playerController = uevr.api:get_player_controller(0)
 		-- local locationX = 0
 		-- local locationY = 0
-		
+
 		--zeros
 		-- playerController:GetMousePosition(locationX, locationY)
 		-- print("Before",locationX, locationY)
-				
+
 		--zeros
 		-- WidgetLayoutLibrary:GetMousePositionScaledByDPI(playerController, locationX, locationY);
 		-- print("In mouse 2",locationX, locationY)
-		
+
 		local currentMousePosition = WidgetLayoutLibrary:GetMousePositionOnViewport(uevrUtils.get_world())
 		--print("In mouse",currentMousePosition.X, currentMousePosition.Y)
 
@@ -538,8 +539,8 @@ function moveMouse()
 			-- print("WH",width, height)
 			-- local size = WidgetLayoutLibrary:GetViewportSize(uevrUtils.get_world())
 			-- print("Size",size.X, size.Y)
-			
-					
+
+
 			-- --bool ProjectWorldToScreen(class APlayerController* Player, const FVector& WorldPosition, FVector2D& ScreenPosition, bool bPlayerViewportRelative);
 			-- Statics:ProjectWorldToScreen(playerController, worldLocation, g_screenLocation, false)
 			-- print("Statics",g_screenLocation.X, g_screenLocation.Y)
@@ -562,15 +563,15 @@ function moveMouse()
 end
 
 function preGameStateCheck()
-	if uiManager == nil then 
-		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager") 
+	if uiManager == nil then
+		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager")
 	end
 	g_isPregame = uiManager ~= nil and UEVR_UObjectHook.exists(uiManager) and uiManager.IsInPreGameplayState ~= nil and uiManager:IsInPreGameplayState()
 end
 
 function inPauseMode()
-	if uiManager == nil then 
-		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager") 
+	if uiManager == nil then
+		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager")
 	end
 	return uevrUtils.validate_object(uiManager) ~= nil and uiManager.InPauseMode ~= nil and uiManager:InPauseMode()
 end
@@ -581,7 +582,7 @@ function disableUIFollowsView(val, force)
 			uevr.params.vr.set_mod_value("UI_FollowView","false")
 			uevr.params.vr.recenter_view()
 			print("Turned off UI_FollowsView")
-			if configui.getValue("attachedUI") == true and not (g_fieldGuideUIManager ~= nil and g_lastTabIndex == 6) then			 
+			if configui.getValue("attachedUI") == true and not (g_fieldGuideUIManager ~= nil and g_lastTabIndex == 6) then
 				decoupledYawCurrentRot = lastHMDRotation.Yaw
 			end
 		else
@@ -592,8 +593,8 @@ function disableUIFollowsView(val, force)
 			end
 		end
 		isInGestureCooldown = true
-		delay(1000, function() 
-			isInGestureCooldown = false 
+		delay(1000, function()
+			isInGestureCooldown = false
 			gesturesModule.reset()
 		end)
 	end
@@ -615,7 +616,7 @@ function inMenuChanged(val)
 		-- isInGestureCooldown = false 
 		-- gesturesModule.reset()
 	-- end)
-	
+
 	-- if val then
 		-- print("Entered Menu")
 		-- if configui.getValue("attachedUI") == true then
@@ -687,8 +688,8 @@ function inMenuChanged(val)
 end
 
 function inMenuMode()
-	if uiManager == nil then 
-		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager") 
+	if uiManager == nil then
+		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager")
 	end
 	return uevrUtils.validate_object(uiManager) ~= nil and uiManager.GetIsUIShown ~= nil and uiManager:GetIsUIShown()
 end
@@ -699,7 +700,7 @@ function checkIsInMenu()
 		inMenuChanged(inMenu)
 	end
 	isInMenu = inMenu
-	
+
 	checkIsInMainMenu()
 end
 
@@ -708,8 +709,8 @@ function inMainMenuChanged(newValue)
 end
 
 function inMainMenu()
-	if uiManager == nil then 
-		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager") 
+	if uiManager == nil then
+		uiManager = uevrUtils.find_first_of("Class /Script/Phoenix.UIManager")
 	end
 	return uevrUtils.validate_object(uiManager) ~= nil and uiManager.IsInFrontendLevel ~= nil and uiManager:IsInFrontendLevel()
 end
@@ -748,7 +749,7 @@ function updateArmState()
 end
 
 function updateVolumetricFog()
-	if useVolumetricFog ~= nil and g_lastVolumetricFog ~= useVolumetricFog then 
+	if useVolumetricFog ~= nil and g_lastVolumetricFog ~= useVolumetricFog then
 		if useVolumetricFog then
 			uevrUtils.set_cvar_int("r.VolumetricFog",1)
 		else
@@ -807,11 +808,11 @@ function mediaPlayerCheck()
 		g_mediaPlayerFadeLock = false
 		uevrUtils.fadeCamera(fadeDuration, false,false,true)
 	end
-	
+
 	if gestureMode == GestureMode.Spells then
 		handleSpellMedia(spellUrlStr)
 	end
-	
+
 	--if doUpdateMediaPlayers then updateMediaPlayers() end
 
 end
@@ -841,7 +842,7 @@ function handleSpellMedia(fileName)
 			gesturesModule.hideGlyphs()
 		end
 		lastSpellMediaFileName = fileName
-	end 
+	end
 end
 
 function getSpellNameFromFileName(fileName)
@@ -864,7 +865,7 @@ function getSpellNameFromFileName(fileName)
 end
 -----------------------------------
 
-	
+
 
 function handleFieldGuidePageChange(currentTabIndex)
 	--print("Tab",currentTabIndex)
@@ -940,7 +941,7 @@ function checkCinematic()
 				endCinematic()
 			end
 		end
-		isInCinematic = pawn.InCinematic 
+		isInCinematic = pawn.InCinematic
 	end
 end
 
@@ -957,7 +958,7 @@ function handleBrokenControllers(pawn, state, isLeftHanded)
 		if headLocation ~= nil and handLocation ~= nil then
 			local distance = kismet_math_library:Vector_Distance(headLocation, handLocation)
 			--print(distance,"\n")
-			if distance < 30 then	
+			if distance < 30 then
 				if showHands then
 					disconnectWand()
 					gesturesModule.reset()
@@ -978,12 +979,12 @@ end
 
 function on_lazy_poll()
 	uevr.params.vr.set_snap_turn_enabled(false)
-	
-	local MovementOrientation =  uevrUtils.PositiveIntegerMask(uevr.params.vr:get_mod_value("VR_MovementOrientation"))				
+
+	local MovementOrientation =  uevrUtils.PositiveIntegerMask(uevr.params.vr:get_mod_value("VR_MovementOrientation"))
 	if MovementOrientation == "1" or MovementOrientation == "2" then
 		uevr.params.vr.set_mod_value("VR_MovementOrientation","0")
-	end	
-	
+	end
+
 	preGameStateCheck()
 	updateMediaPlayers()
 	mediaPlayerCheck()
@@ -991,7 +992,7 @@ function on_lazy_poll()
 	disguiseCheck()
 	wandCheck()
 	updateVolumetricFog()
-	
+
 	if isFP and showHands and not isInCinematic and not hands.exists() then
 		createHands()
 	end
@@ -999,16 +1000,16 @@ function on_lazy_poll()
 	if isFP and not isWandDisabled and not isInCinematic and not wand.isConnected() then --can be disabled when disguised as prof black or in deathly hollows level
 		connectWand()
 	end
-	
+
 	if isFP and manualHideWand then
 		updateWandVisibility()
 	end
-	
+
 	local pc = uevr.api:get_player_controller(0)
 	if targetingMode == TargetMode.Manual and pc ~= nil then
 		pc:ActivateAutoTargetSense(false, true)
 	end
-	
+
 	--print("HMD",lastHMDRotation.Pitch, lastHMDRotation.Yaw, lastHMDRotation.Roll)
 	-- --print("later",lastHMDPosition.X, lastHMDPosition.Y, lastHMDPosition.Z)
 	-- uevr.params.vr.get_pose(uevr.params.vr.get_hmd_index(), temp_vec3f, temp_quatf)
@@ -1029,58 +1030,58 @@ function on_level_change(level)
 	if level:get_full_name() == "Level /Game/Environment/DeathlyHallows_Dungeon/maps/DeathlyHallows_Dungeon.DeathlyHallows_Dungeon.PersistentLevel" then
 		isWandDisabled = true
 	end
-	
+
 	initLevel()
 end
 
 function on_pre_engine_tick(engine, delta)
 	if configui.getValue("fpCinematic") ~= true then
-		checkCinematic() 
+		checkCinematic()
 	end
 
 	local newLocomotionMode = mounts.updateMountLocomotionMode(pawn, locomotionMode)
-	if newLocomotionMode ~= nil then 
+	if newLocomotionMode ~= nil then
 		setLocomotionMode(newLocomotionMode)
 	end
-	
+
 	checkIsInMenu()
-		
+
 	lastWandTargetLocation, lastWandTargetDirection, lastWandPosition = wand.getWandTargetLocationAndDirection(useCrossHair and not g_isPregame)
 
-	if isFP and not isInCutscene() and uevrUtils.validate_object(pawn) ~= nil then			
+	if isFP and not isInCutscene() and uevrUtils.validate_object(pawn) ~= nil then
 		if gestureMode == GestureMode.Spells and (not (g_isPregame or isInMenu or isGesturesDisabled or isInGestureCooldown or not mounts.isWalking())) then
 			--print("Is wand equipped",pawn:IsWandEquipped(),"\n")
 			gesturesModule.handleGestures(pawn, gestureMode, lastWandTargetDirection, lastWandPosition, delta)
 		end
-		
+
 		if not isDecoupledYawDisabled then
 			local targetDirection = nil
 			if wand.isConnected() then targetDirection = lastWandTargetDirection else targetDirection = controllers.getControllerDirection(1) end
 			alphaDiff = decoupledYaw.handleDecoupledYaw(pawn, alphaDiff, targetDirection, lastHMDDirection, locomotionMode)
 		end
-		
+
 		local mountPawn = mounts.getMountPawn(pawn)
-		if uevrUtils.validate_object(mountPawn) ~= nil and uevrUtils.validate_object(mountPawn.Mesh) ~= nil and mountPawn.Mesh.bVisible == true then 
+		if uevrUtils.validate_object(mountPawn) ~= nil and uevrUtils.validate_object(mountPawn.Mesh) ~= nil and mountPawn.Mesh.bVisible == true then
 			--print("Hiding mesh from tick\n")
 			hidePlayer(isFP)
 		end
-		
+
 		if useCrossHair then
 			updateCrosshair(lastWandTargetDirection, lastWandTargetLocation)
 		end
-		
+
 		updateArmState()
 
 	end
-	
+
 	--monitor the field guide tab index on the tick since UEVR cant handle hooked functions correctly
 	if g_fieldGuideUIManager ~= nil and g_fieldGuideUIManager.FieldGuideWidget ~= nil then
 		--print(g_fieldGuideUIManager.FieldGuideWidget.CurrentTabIndex)
 		handleFieldGuidePageChange(g_fieldGuideUIManager.FieldGuideWidget.CurrentTabIndex)
 	end
-	
+
 	moveMouse()
-	
+
 	-- if uevrUtils.validate_object(pawn) ~= nil then
 		-- pawn:RestoreHealth() --invincibility
 	-- end
@@ -1089,7 +1090,7 @@ end
 --callback for on_post_calculate_stereo_view_offset
 function on_post_calculate_stereo_view_offset(device, view_index, world_to_meters, position, rotation, is_double)
 	if view_index == 1 then
-		local success, response = pcall(function()		
+		local success, response = pcall(function()
 			lastHMDDirection = kismet_math_library:GetForwardVector(rotation)
 			if lastHMDDirection.Y ~= lastHMDDirection.Y then
 				print("NAN error",rotation.x, rotation.y, rotation.z,"\n")
@@ -1102,7 +1103,7 @@ function on_post_calculate_stereo_view_offset(device, view_index, world_to_meter
 			lastHMDRotation.Pitch = rotation.Pitch
 			lastHMDRotation.Yaw = rotation.Yaw
 			lastHMDRotation.Roll = rotation.Roll
-			
+
 			--print(lastHMDRotation.Pitch, lastHMDRotation.Yaw, lastHMDRotation.Roll)
 			--print(lastHMDPosition.X, lastHMDPosition.Y, lastHMDPosition.Z)
 		end)
@@ -1111,26 +1112,26 @@ function on_post_calculate_stereo_view_offset(device, view_index, world_to_meter
 		-- end
 	end
 end
-	
+
 function on_xinput_get_state(retval, user_index, state)
-	local success, response = pcall(function()		
+	local success, response = pcall(function()
 		if isFP and (not isInCutscene()) then
 			local disableStickOverride = g_isPregame or isInMenu or mounts.isOnBroom() or (gestureMode == GestureMode.Spells and gesturesModule.isCastingSpell(pawn, "Spell_Wingardium"))
 			decoupledYawCurrentRot = input.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, locomotionMode, controlMode, g_isLeftHanded, snapAngle, smoothTurnSpeed, useSnapTurn, alphaDiff, disableStickOverride)
-			
+
 			if gestureMode == GestureMode.Spells then
 				gesturesModule.handleInput(state, g_isLeftHanded)
 			end
-			
+
 			if manualHideWand and not isWandDisabled and mounts.isWalking() then
 				wand.handleInput(pawn, state, g_isLeftHanded)
 			end
-			
+
 			if showHands then
-				hands.handleInput(state, wand.isVisible())	
+				hands.handleInput(state, wand.isVisible())
 			end
-			
-			handleBrokenControllers(mounts.getMountPawn(pawn), state, g_isLeftHanded)	
+
+			handleBrokenControllers(mounts.getMountPawn(pawn), state, g_isLeftHanded)
 		end
 	end)
 	-- if success == false then
@@ -1159,7 +1160,7 @@ function hookLevelFunctions()
 			end
 		end
 	, true)
-	
+
 	hook_function("BlueprintGeneratedClass /Game/Pawn/Shared/StateTree/BTT_Biped_PuzzleMiniGame.BTT_Biped_PuzzleMiniGame_C", "ReceiveExecute", false,
 		function(fn, obj, locals, result)
 			print("Alohomora:ReceiveExecute\n")
@@ -1182,7 +1183,7 @@ end
 -- only do this once 
 local g_isLateHooked = false
 function hookLateFunctions()
-	if not g_isLateHooked then		
+	if not g_isLateHooked then
 
 		hook_function("WidgetBlueprintGeneratedClass /Game/UI/Vendor/UI_BP_Vendor.UI_BP_Vendor_C", "OnIntroStarted", true, nil,
 			function(fn, obj, locals, result)
@@ -1243,7 +1244,7 @@ function hookLateFunctions()
 				disableDecoupledYaw(true)
 				isInAstronomyPuzzle = true
 				if manualHideWand then wand.setVisible(pawn, false) end
-				
+
 				--auto solve game unless we can find a solution for UEVR FOV locking
 				obj:Solved()
 				delay(3000, function()
@@ -1260,11 +1261,11 @@ function hookLateFunctions()
 				isInAstronomyPuzzle = false
 			end
 		, true)
-		
+
 
 		wand.registerLateHooks()
 
-		if g_isPregame then		
+		if g_isPregame then
 			--using this to show a smooth transition between creating your avatar and starting the game
 			hook_function("WidgetBlueprintGeneratedClass /Game/Levels/RootLevel.RootLevel_C", "UnloadAvatarCreatorLevel", true, nil,
 				function(fn, obj, locals, result)
@@ -1272,7 +1273,7 @@ function hookLateFunctions()
 					setLocomotionMode(locomotionMode)
 				end
 			, true)
-		
+
 		end
 
 		g_isLateHooked = true
@@ -1450,7 +1451,7 @@ hook_function("Class /Script/Phoenix.TutorialSystem", "StartTutorial", true, nil
 	function(fn, obj, locals, result)
 		tutorialInstance = obj
 		--if we do it immediately then CurrentTutorialStepData still points to the previous tutorial
-		delay(200, function() 
+		delay(200, function()
 			local tutorialName = tutorialInstance.CurrentTutorialData.TutorialName:to_string()
 			--debugModule.dump(tutorialInstance)
 			print("TutorialName 1=",tutorialInstance.CurrentTutorialStepData.Title,"\n")
@@ -1460,31 +1461,31 @@ hook_function("Class /Script/Phoenix.TutorialSystem", "StartTutorial", true, nil
 			print("TutorialName 5=",tutorialInstance.CurrentTutorialStepData.BodyPC,"\n")
 			print("StartTutorial modal=",tutorialInstance.CurrentTutorialStepData.Modal,"\n")
 			print("StartTutorial PausesTheGame=",tutorialInstance.CurrentTutorialStepData.PausesTheGame,"\n")
-						
+
 			if tutorialName == "AutoTargetSetting" then
 				hideActorForNextCinematic = true
 			end
-									
+
 			if tutorialInstance.CurrentTutorialStepData.PausesTheGame then
 				uevrUtils.fadeCamera(0.3, true)
 			end
-			
+
 			-- if tutorialInstance.CurrentTutorialStepData.Body == "TUT_Display_SpellMiniGameAdvanced_desc" then
 				-- hidePlayer(isFP)
 			-- end
-			
+
 			--unhide robe hidden sometime during intro combat
 			if tutorialInstance.CurrentTutorialStepData.Alias:to_string() == "SprintingTutorialStep1" then
 				hidePlayer(false)
 			end
-			
+
 			if tutorialName == "Healing" then
 				fadeDuration = defaultFadeDuration
 				setCharacterInFPSView(isFP) --need to do this in case we come directly from the dragon biting scene
 				if isFP then setLocomotionMode(locomotionMode) end
 				--if manualHideWand then wand.holsterWand(pawn, true) end
 			end
-					
+
 		end)
 	end
 , true)
@@ -1573,11 +1574,11 @@ uevrUtils.initUEVR(uevr)
 
 -- function connectCube(hand)
 	-- --local staticMesh = uevrUtils.getLoadedAsset("StaticMesh /Engine/BasicShapes/Cube.Cube")
-	
+
 	-- local staticMesh = uevrUtils.getLoadedAsset("StaticMesh /Game/Environment/Hogwarts/Meshes/Statues/SM_HW_Armor_Sword.SM_HW_Armor_Sword")
 	-- local leftComponent = uevrUtils.createStaticMeshComponent("StaticMesh /Game/Environment/Hogwarts/Meshes/Statues/SM_HW_Armor_Sword.SM_HW_Armor_Sword")--"StaticMesh /Engine/BasicShapes/Cube.Cube")
 	-- local leftConnected = controllers.attachComponentToController(0, leftComponent)
-	
+
 	-- -- uevrUtils.set_component_relative_transform(leftComponent, nil, nil, {X=0.03, Y=0.03, Z=0.03})
 	-- uevrUtils.set_component_relative_transform(leftComponent, nil, {Pitch=140, Yaw=0, Roll=0}, nil, {X=0.9, Y=0.9, Z=0.9})
 	-- leftComponent:SetCollisionEnabled(3, true)
@@ -1603,8 +1604,8 @@ uevrUtils.initUEVR(uevr)
     -- -- FName GetCollisionProfileName();
     -- -- TEnumAsByte<ECollisionChannel> GetCollisionObjectType();
     -- -- TEnumAsByte<ECollisionEnabled::Type> GetCollisionEnabled();
-	
-	
+
+
 
 	-- -- local component = uevrUtils.create_component_of_class("Class /Script/OdysseyRuntime.ExtendedOdcRepulsorComponent")
 	-- -- if component ~= nil then
