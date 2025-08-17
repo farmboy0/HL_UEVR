@@ -891,13 +891,13 @@ function handleFieldGuidePageChange(currentTabIndex)
 	if currentTabIndex == 6 then
 		delay(1300, function()
 			enableVRCameraOffset = false
-			uevrUtils.set_2D_mode(true)
+			--uevrUtils.set_2D_mode(true)
 		end)
 	elseif currentTabIndex == 1 then
 		--when on the gear screen dont offset the camera so that the avatar appears
 		enableVRCameraOffset = false
 		delay(300, function()
-			uevrUtils.set_2D_mode(false)
+			--uevrUtils.set_2D_mode(false)
 		end)
 	else
 		if g_lastTabIndex == 1 then
@@ -908,7 +908,7 @@ function handleFieldGuidePageChange(currentTabIndex)
 			enableVRCameraOffset = true
 		end
 		delay(300, function()
-			uevrUtils.set_2D_mode(false)
+			--uevrUtils.set_2D_mode(false)
 		end)
 	end
 
@@ -1256,7 +1256,7 @@ function hookLateFunctions()
 		hook_function("WidgetBlueprintGeneratedClass /Game/UI/Actor/UI_BP_Astronomy_minigame.UI_BP_Astronomy_minigame_C", "ConstellationImageLoaded", true, nil,
 			function(fn, obj, locals, result)
 				print("Astronomy MiniGame ConstellationImageLoaded\n")
-				uevrUtils.set_2D_mode(true)
+				--uevrUtils.set_2D_mode(true)
 				disableDecoupledYaw(true)
 				isInAstronomyPuzzle = true
 				if manualHideWand then wand.setVisible(pawn, false) end
@@ -1273,7 +1273,7 @@ function hookLateFunctions()
 			function(fn, obj, locals, result)
 				print("Astronomy MiniGame OnOutroEnded\n")
 				setLocomotionMode(locomotionMode)
-				uevrUtils.set_2D_mode(false)
+				--uevrUtils.set_2D_mode(false)
 				isInAstronomyPuzzle = false
 			end
 		, true)
@@ -1355,7 +1355,7 @@ hook_function("Class /Script/Phoenix.UIManager", "ExitFieldGuideWithReason", tru
 	function(fn, obj, locals, result)
 		print("UIManager:ExitFieldGuideWithReason\n")
 		g_fieldGuideUIManager = nil
-		uevrUtils.set_2D_mode(false)
+		--uevrUtils.set_2D_mode(false)
 		setLocomotionMode(locomotionMode)
 		enableVRCameraOffset = true
 		--always updating hands here until we can find a specific call for glove changes
