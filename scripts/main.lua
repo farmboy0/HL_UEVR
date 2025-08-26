@@ -1131,24 +1131,29 @@ end
 
 function on_xinput_get_state(retval, user_index, state)
 	local success, response = pcall(function()
-		if isFP and (not isInCutscene()) then
-			local disableStickOverride = g_isPregame or isInMenu or mounts.isOnBroom() or (gestureMode == GestureMode.Spells and gesturesModule.isCastingSpell(pawn, "Spell_Wingardium"))
-			decoupledYawCurrentRot = input.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, locomotionMode, controlMode, g_inputIsLeftHanded, wandInLeftHand, snapAngle, smoothTurnSpeed, useSnapTurn, alphaDiff, disableStickOverride)
-
-			if gestureMode == GestureMode.Spells then
-				gesturesModule.handleInput(state, g_inputIsLeftHanded)
-			end
-
-			if manualHideWand and not isWandDisabled and mounts.isWalking() then
-				wand.handleInput(pawn, state, g_inputIsLeftHanded)
-			end
-
-			if showHands then
-				hands.handleInput(state, wand.isVisible())
-			end
-
-			handleBrokenControllers(mounts.getMountPawn(pawn), state, isWandInLeftHand())
+		if not isFP or isInCutscene() then
+			return
 		end
+
+		local disableAdvancedInput = g_isPregame or isInMenu or mounts.isOnBroom()
+			or (gestureMode == GestureMode.Spells and gesturesModule.isCastingSpell(pawn, "Spell_Wingardium"))
+		decoupledYawCurrentRot = input.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled,
+			locomotionMode, controlMode, g_inputIsLeftHanded, wandInLeftHand, snapAngle, smoothTurnSpeed,
+			useSnapTurn, alphaDiff, disableAdvancedInput)
+
+		if gestureMode == GestureMode.Spells then
+			gesturesModule.handleInput(state, g_inputIsLeftHanded)
+		end
+
+		if manualHideWand and not isWandDisabled and mounts.isWalking() then
+			wand.handleInput(pawn, state, g_inputIsLeftHanded)
+		end
+
+		if showHands then
+			hands.handleInput(state, wand.isVisible())
+		end
+
+		handleBrokenControllers(mounts.getMountPawn(pawn), state, isWandInLeftHand())
 	end)
 	-- if success == false then
 		-- uevrUtils.print("[on_xinput_get_state] " .. response, LogLevel.Error)
