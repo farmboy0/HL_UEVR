@@ -99,10 +99,12 @@ function doRightHandRemap(state)
 
 end
 
-function M.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, locomotionMode, controlMode, isLeftHanded, snapAngle, smoothTurnSpeed, useSnapTurn, AlphaDiff, isInMenu)
-	--disable decoupled yaw during grip press
+function M.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, locomotionMode,
+	controlMode, inputIsLeftHanded, wandInLeftHand, snapAngle, smoothTurnSpeed, useSnapTurn, AlphaDiff, isInMenu)
+
+		--disable decoupled yaw during grip press
 	local gripButton = XINPUT_GAMEPAD_LEFT_SHOULDER
-	if isLeftHanded then
+	if inputIsLeftHanded then
 		gripButton = XINPUT_GAMEPAD_RIGHT_SHOULDER
 	end
 	if isButtonPressed(state, gripButton) and not gripOn then
@@ -122,12 +124,17 @@ function M.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, lo
 	--support for advanced input mode
 	local overrideDecoupledYaw = false
 	if controlMode == ControllerMode.Advanced and not isInMenu then
-		if isLeftHanded then
+		if inputIsLeftHanded then
 			if state.Gamepad.bLeftTrigger > triggerValue then
 				overrideDecoupledYaw = true
 			end
 			doLeftHandRemap(state)
 		else
+			if wandInLeftHand then
+				local tmp = state.Gamepad.bLeftTrigger
+				state.Gamepad.bLeftTrigger = state.Gamepad.bRightTrigger
+				state.Gamepad.bRightTrigger = tmp
+			end
 			if state.Gamepad.bRightTrigger > triggerValue then
 				overrideDecoupledYaw = true
 			end
@@ -143,7 +150,7 @@ function M.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, lo
 		local ThumbRX = state.Gamepad.sThumbRX
 		local ThumbRY = state.Gamepad.sThumbRY
 		
-		if isLeftHanded then
+		if inputIsLeftHanded then
 			ThumbLX = state.Gamepad.sThumbRX
 			ThumbLY = state.Gamepad.sThumbRY
 			ThumbRX = state.Gamepad.sThumbLX
@@ -151,7 +158,7 @@ function M.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, lo
 		end
 		
 		if locomotionMode == LocomotionMode.Head then 
-			if isLeftHanded then
+			if inputIsLeftHanded then
 				state.Gamepad.sThumbRX= ThumbLX*math.cos(-AlphaDiff)- ThumbLY*math.sin(-AlphaDiff)			
 				state.Gamepad.sThumbRY= math.sin(-AlphaDiff)*ThumbLX + ThumbLY*math.cos(-AlphaDiff)
 			else

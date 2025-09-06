@@ -216,6 +216,12 @@ local configDefinition = {
 			},
 			{
 				widgetType = "checkbox",
+				id = "wandInLeftHand",
+				label = "Use wand with the left hand",
+				initialValue = false
+			},
+			{
+				widgetType = "checkbox",
 				id = "useVolumetricFog",
 				label = "Enable Volumetric Fog",
 				initialValue = useVolumetricFog
@@ -278,6 +284,7 @@ function M.loadSettings()
 	print("Use Snap Turn:", useSnapTurn, "\n")
 	print("Snap Angle:", snapAngle, "\n")
 	print("Smooth Turn Speed:", smoothTurnSpeed, "\n")
+	print("Use Wand with the left hand:", configui.getValue("wandInLeftHand"), "\n")
 
 end
 

@@ -35,6 +35,7 @@ local isWandDisabled = false
 local isInGestureCooldown = false
 local isGesturesDisabled = false
 local enableVRCameraOffset = true
+local wandInLeftHand = false
 
 --decoupled yaw variables
 local isDecoupledYawDisabled = true
@@ -58,7 +59,7 @@ local cameraStackVal = true
 
 local hideActorForNextCinematic = false
 
-local g_isLeftHanded = false
+local g_inputIsLeftHanded = false
 local g_lastVolumetricFog = nil
 local g_isPregame = true
 local g_eulaClicked = false
@@ -86,6 +87,7 @@ function UEVRReady(instance)
 	uevr.params.vr.set_mod_value("VR_DecoupledPitchUIAdjust","false")
 
 	config.init()
+	wandInLeftHand = configui.getValue("wandInLeftHand")
 	configui.setLabel("versionTxt", "Hogwarts Legacy First Person Mod v" ..  version)
 	initLevel()
 	preGameStateCheck()
@@ -182,7 +184,6 @@ configui.onUpdate("useCrossHair", function(value)
 	if useCrossHair then
 		createCrosshair()
 	end
-
 end)
 
 configui.onUpdate("snapAngle", function(value)
@@ -235,6 +236,11 @@ configui.onUpdate("attachedUI", function(value)
 	uevr.params.vr.set_mod_value("UI_FollowView", value and "true" or "false")
 end)
 
+configui.onUpdate("wandInLeftHand", function(value)
+	wandInLeftHand = value
+	onWandHandednessChanged()
+end)
+
 
 -----------------------------------
 
@@ -270,24 +276,33 @@ function createHands()
 			animation.pose("left_glove", "open_left")
 
 			socketOffsetName = "Reference"
-			if not animation.hasBone(hands.getHandComponent(g_isLeftHanded and Handed.Left or Handed.Right), "SKT_Reference") then
+			if not animation.hasBone(hands.getHandComponent(wandHandId()), "SKT_Reference") then
 				socketOffsetName = "Custom"
 			end
 		else
 			uevrUtils.print("Hand creation failed", LogLevel.Warning)
 		end
 	end
-
+end
+function isWandInLeftHand()
+	return g_inputIsLeftHanded or wandInLeftHand
+end
+function wandHandId()
+	return isWandInLeftHand() and Handed.Left or Handed.Right
+end
+function wandHandStr()
+	return isWandInLeftHand() and "left" or "right"
 end
 -----------------------------------
 
 
 -----------------------------------
 -- Wand functions
+
 function onWandVisibilityChange(isVisible)
 	--uevrUtils.print("Wand visibility changed to " .. (isVisible and "visible" or "hidden"), LogLevel.Info)
 	if hands.exists() then
-		local handStr = g_isLeftHanded and "left" or "right"
+		local handStr = wandHandStr()
 		if isVisible then
 			animation.pose(handStr.."_hand", "grip_"..handStr.."_weapon")
 			animation.pose(handStr.."_glove", "grip_"..handStr.."_weapon")
@@ -334,13 +349,13 @@ end
 
 function connectWand()
 	if showHands and hands.exists() then
-		wand.connectToSocket(mounts.getMountPawn(pawn), hands.getHandComponent(g_isLeftHanded and Handed.Left or Handed.Right), "WandSocket", getSocketOffset())
-		local handStr = g_isLeftHanded and "left" or "right"
+		wand.connectToSocket(mounts.getMountPawn(pawn), hands.getHandComponent(wandHandId()), "WandSocket", getSocketOffset())
 
+		local handStr = wandHandStr()
 		animation.pose(handStr.."_hand", "grip_"..handStr.."_weapon")
 		animation.pose(handStr.."_glove", "grip_"..handStr.."_weapon")
 	else
-		wand.connectToController(mounts.getMountPawn(pawn), g_isLeftHanded and 0 or 1)
+		wand.connectToController(mounts.getMountPawn(pawn), wandHandId())
 	end
 end
 -----------------------------------
@@ -442,23 +457,24 @@ function disableDecoupledYaw(val)
 	isDecoupledYawDisabled =  val
 end
 
-function onHandednessChanged()
-	print("Is Left handed",g_isLeftHanded,"\n")
+function onWandHandednessChanged()
+	print("Is Left handed",isWandInLeftHand(),"\n")
 	disconnectWand()
 	--connectWand()
 end
 
 function handednessCheck()
 	if phoenixCameraSettings ~= nil then
-		local val = getIsLeftHanded()
-		if val ~= g_isLeftHanded then
-			g_isLeftHanded = val
-			onHandednessChanged()
+		local val = getInputIsLeftHanded()
+		if val ~= g_inputIsLeftHanded then
+			g_inputIsLeftHanded = val
+			onWandHandednessChanged()
 		end
+		configui.hideWidget("wandInLeftHand", g_inputIsLeftHanded)
 	end
 end
 
-function getIsLeftHanded()
+function getInputIsLeftHanded()
 	if phoenixCameraSettings == nil then
 		phoenixCameraSettings = uevrUtils.find_first_of("Class /Script/Phoenix.PhoenixCameraSettings")
 	end
@@ -531,7 +547,7 @@ function moveMouse()
 			-- Converts to screen coordinates
 			--bool ProjectWorldLocationToScreen(FVector WorldLocation, FVector2D& ScreenLocation, bool bPlayerViewportRelative)
 		local distance = 1000
-		local forwardVector = controllers.getControllerDirection(1) -- lastHMDDirection
+		local forwardVector = controllers.getControllerDirection(wandHandId())
 		local worldLocation = forwardVector * distance
 
 			-- local width, height
@@ -1117,21 +1133,21 @@ function on_xinput_get_state(retval, user_index, state)
 	local success, response = pcall(function()
 		if isFP and (not isInCutscene()) then
 			local disableStickOverride = g_isPregame or isInMenu or mounts.isOnBroom() or (gestureMode == GestureMode.Spells and gesturesModule.isCastingSpell(pawn, "Spell_Wingardium"))
-			decoupledYawCurrentRot = input.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, locomotionMode, controlMode, g_isLeftHanded, snapAngle, smoothTurnSpeed, useSnapTurn, alphaDiff, disableStickOverride)
+			decoupledYawCurrentRot = input.handleInput(state, decoupledYawCurrentRot, isDecoupledYawDisabled, locomotionMode, controlMode, g_inputIsLeftHanded, wandInLeftHand, snapAngle, smoothTurnSpeed, useSnapTurn, alphaDiff, disableStickOverride)
 
 			if gestureMode == GestureMode.Spells then
-				gesturesModule.handleInput(state, g_isLeftHanded)
+				gesturesModule.handleInput(state, g_inputIsLeftHanded)
 			end
 
 			if manualHideWand and not isWandDisabled and mounts.isWalking() then
-				wand.handleInput(pawn, state, g_isLeftHanded)
+				wand.handleInput(pawn, state, g_inputIsLeftHanded)
 			end
 
 			if showHands then
 				hands.handleInput(state, wand.isVisible())
 			end
 
-			handleBrokenControllers(mounts.getMountPawn(pawn), state, g_isLeftHanded)
+			handleBrokenControllers(mounts.getMountPawn(pawn), state, isWandInLeftHand())
 		end
 	end)
 	-- if success == false then
