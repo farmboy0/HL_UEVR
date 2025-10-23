@@ -85,42 +85,6 @@ local function rotateVector(vector, axis, angle)
     return matrixMultiply(rotationMatrix, vector)
 end
 
--- -- Function to calculate the angle between a 3D vector and the x-axis in radians
--- local function signedAngleFromAxis(vector, axis)
-    -- local axisNormalized = normalize(axis)
-    -- local vectorNormalized = normalize(vector)
-    -- local dotProd = dotProduct(axisNormalized, vectorNormalized)
-    -- local angle = math.acos(dotProd)
-
-    -- local crossProd = crossProduct(axisNormalized, vectorNormalized)
-
-    -- -- Calculate the sign of the angle using the z-component of the cross product
-    -- if crossProd[3] < 0 then
-        -- angle = -angle
-    -- end
-
-    -- return angle
--- end
-
--- -- Function to calculate the angle between two vectors in radians, signed with respect to the z-axis
--- local function signedAngleBetweenVectors(vector1, vector2)
-    -- local dotProd = dotProduct(vector1, vector2)
-    -- local mag1 = magnitude(vector1)
-    -- local mag2 = magnitude(vector2)
-    -- local crossProd = crossProduct(vector1, vector2)
-    -- local angle1 = math.acos(dotProd / (mag1 * mag2))
-
-    -- -- Calculate the sign of the angle using the z-component of the cross product
-    -- if crossProd[1] < 0 then
-        -- angle = -angle1
-	-- else
-		-- angle = angle1
-    -- end
-	-- print("ss",dotProd, mag1, mag2, angle1, angle, crossProd[1], crossProd[2], crossProd[3], "\n")
-
-    -- return angle
--- end
-
 -- Function to calculate the angle between two vectors in radians
 local function angleBetweenVectors(vector1, vector2)
     local dotProd = dotProduct(vector1, vector2)
@@ -129,51 +93,12 @@ local function angleBetweenVectors(vector1, vector2)
     return math.acos(dotProd / (mag1 * mag2))
 end
 
-
--- local function detectVectorIn3DSpace(points)
-    -- local totalPoints = #points
-    -- if totalPoints < minPoints then
-        -- return false  -- Not enough points to detect a vector
-    -- end
-
-	-- local distances = {}
-	-- local vector1 = nil
-	-- local vector2 = nil
-	-- for i = 1, totalPoints - 1 do
-		-- local j = i + 1
-		-- local dx = points[j].X - points[i].X
-		-- local dy = points[j].Y - points[i].Y
-		-- local dz = points[j].Z - points[i].Z
-
-		-- if vector1 == nil then
-			-- vector1 = {dx, dy, dz}
-		-- else
-			-- vector2 = {dx, dy, dz}
-		-- end
-
-		-- if vector2 ~= nil then
-			-- local angle = angleBetweenVectors(vector1, vector2)
-			-- -- Convert the angle from radians to degrees
-			-- local angleInDegrees = math.deg(angle)
-
-			-- --print("The angle between the vectors is: " .. angleInDegrees .. " degrees\n")
-			-- if angleInDegrees > 60 then
-				-- print("* Direction change detected\n")
-				-- return true
-			-- end
-			-- vector1 = vector2
-		-- end
-	-- end
-
-    -- return false
--- end
-
 local function detectAngleChangeIn3DSpace(points)
     local totalPoints = #points
     if totalPoints < minPoints then
         return false  -- Not enough points to detect a vector
     end
-	
+
 	local j = totalPoints - 1
 	local vector1 = {points[j].X - points[1].X, points[j].Y - points[1].Y, points[j].Z - points[1].Z}
 	local vector2 = {points[j+1].X - points[j].X, points[j+1].Y - points[j].Y, points[j+1].Z - points[j].Z}
@@ -185,7 +110,7 @@ local function detectAngleChangeIn3DSpace(points)
 		debug_print("* Direction change detected\n")
 		return true
 	end
-	
+
     return false
 end
 
@@ -198,7 +123,7 @@ local function inRange(valueA, valueB, maxDeviation)
 	return false
 end
 
-						
+
 local function addVectorToTable(x, y, z)
 	if not (x == 0 and y == 0 and z == 0) then
 		table.insert(vectors, {X = x, Y = y, Z = z})
@@ -223,7 +148,7 @@ local function getVectorAngles(currentDirection)
 		if initialAngle < 0 then initialAngle = initialAngle + 360 end
 		debug_print("Initial Angle: " .. initialAngle .. "\n")
 		table.insert(results, initialAngle)		
-		
+
 		for i = 1, totalVectors - 1 do
 			local vector1 = {vectors[i].X, vectors[i].Y, vectors[i].Z}
 			local vector2 = {vectors[i+1].X, vectors[i+1].Y, vectors[i+1].Z}	
@@ -275,15 +200,15 @@ local function verifyCurrentAngles(currentDirection)
 	end
 	return isValid
 end
-							
+
 local function finalizeDetection(currentDirection)
 	local gestureID = ""
-	
+
 	if #points >= minPoints then
 		addVectorToTable(points[#points].X - points[1].X, points[#points].Y - points[1].Y, points[#points].Z - points[1].Z)
 	end
 	local results = getVectorAngles(currentDirection)
-	
+
 	--this prevents single vector gestures. If single vector gestures are desired, set value to 0
 	if #results > 1 then
 		for i = 1, #glyphGestures do
@@ -311,9 +236,8 @@ local function finalizeDetection(currentDirection)
 	end
 
 	M.reset()
-	
-	return gestureID
 
+	return gestureID
 end
 
 function M.updateGestureDetection(deltaTime, currentPosition, currentDirection, isDetecting)
@@ -321,6 +245,7 @@ function M.updateGestureDetection(deltaTime, currentPosition, currentDirection, 
 	local gestureID = ""
 	local angleChangeDetected = false
 	local detectionFailed = false
+
 	if wasDetecting and not isDetecting then
 		gestureID = finalizeDetection(currentDirection)
 	elseif isDetecting then
@@ -360,7 +285,7 @@ function M.updateGestureDetection(deltaTime, currentPosition, currentDirection, 
 		end
 	end
 	wasDetecting = isDetecting
-	
+
 	return gestureID, angleChangeDetected, detectionFailed
 end
 

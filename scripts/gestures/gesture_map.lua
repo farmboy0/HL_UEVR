@@ -98,10 +98,6 @@ glyphGestures = {
 		id="LIGHTNING",
 		angles={250, -60, 70}
 	},
-	-- {
-		-- id="UMIRROR",
-		-- angles={180, 90, 90}
-	-- },
 	{
 		id="C",
 		angles={270, -90, -90}
@@ -138,11 +134,6 @@ glyphGestures = {
 		angles={38, 120, 120},
 		lengths={30, 30, 25}
 	},
-	-- {
-		-- id="TRIANGLE2",
-		-- angles={90, 45, 45},
-		-- lengths={30, 30, 25}
-	-- },
 	{
 		id="STEPDOWN",
 		angles={90, 90, -90}
@@ -155,42 +146,6 @@ glyphGestures = {
 		id="STEPUPLEFT",
 		angles={270, 90, -90}
 	},
-	-- {
-		-- id="DOWNUPDOWN",
-		-- angles={180, 175, 175}
-	-- },
-	-- {
-		-- id="DOWNUPDOWN",
-		-- angles={180, -175, 175}
-	-- },
-	-- {
-		-- id="DOWNUPDOWN",
-		-- angles={180, 175, -175}
-	-- },
-	-- {
-		-- id="DOWNUPDOWN",
-		-- angles={180, -175, -175}
-	-- },
-	-- {
-		-- id="RIGHTLEFTRIGHT",
-		-- angles={90, 175, 175}
-	-- },
-	-- {
-		-- id="RIGHTLEFTRIGHT",
-		-- angles={90, -175, 175}
-	-- },
-	-- {
-		-- id="RIGHTLEFTRIGHT",
-		-- angles={90, 175, -175}
-	-- },
-	-- {
-		-- id="RIGHTLEFTRIGHT",
-		-- angles={90, -175, -175}
-	-- },
-	-- {
-		-- id="TOP",
-		-- angles={0, 90, 90}
-	-- },
 	{
 		id="ARROWUP",
 		angles={35, 110}
@@ -199,22 +154,10 @@ glyphGestures = {
 		id="ARROWDOWN",
 		angles={145, -120}
 	},
-	-- {
-		-- id="ARROWLEFT",
-		-- angles={225, -120}
-	-- },
-	-- {
-		-- id="ARROWRIGHT",
-		-- angles={135, 120}
-	-- },
 	{
 		id="TOPMIRROR",
 		angles={0, -90, -90}
 	},
-	-- {
-		-- id="BOTTOM",
-		-- angles={0, 90, 90}
-	-- },
 	{
 		id="RIGHTDOWN",
 		angles={90, 90}
@@ -231,10 +174,6 @@ glyphGestures = {
 		id="UPLEFT",
 		angles={0, -90}
 	},
-	-- {
-		-- id="UPRIGHT",
-		-- angles={0, -90}
-	-- },
 	{
 		id="A1",
 		angles={225, -45}
@@ -243,5 +182,4 @@ glyphGestures = {
 		id="A2",
 		angles={135, 25}
 	}
-
 }

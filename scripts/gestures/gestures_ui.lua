@@ -64,15 +64,6 @@ function M.spawnBeamAtWandPosition(wandTipPosition)
 
 	local baseActor = uevrUtils.spawn_actor(uevrUtils.get_transform(endPos), 1, nil)	
 	local static_mesh_component_c = uevr.api:find_uobject("Class /Script/Engine.StaticMeshComponent")
-	
-	--The globe thing
-	-- local baseComponent = baseActor:AddComponentByClass(static_mesh_component_c, true, temp_transform, false)
-	-- temp_vec3f:set(0.01,0.01,0.01)
-	-- baseComponent:SetWorldScale3D(temp_vec3f)
-
-	-- local staticMesh = uevr.api:find_uobject("StaticMesh /Game/VFX/Meshes/ParticleMeshes/SM_Eropio_Proj.SM_Eropio_Proj") 
-	-- baseComponent:SetStaticMesh(staticMesh, true)
-	-- baseComponent:SetCollisionEnabled(false,false)
 
 	local beamScale = 0.3
 	--local beamTransform = StructObject.new(ftransform_c)
@@ -87,9 +78,9 @@ function M.spawnBeamAtWandPosition(wandTipPosition)
 	beamComponent:SetStaticMesh(staticMesh, true)
 	beamComponent:SetCollisionEnabled(false,false)
 	beamComponent:SetVisibility(false,false)
-	
+
 	currentBeamComponent = beamComponent
-	
+
 	table.insert(beamActors, baseActor)
 end
 
@@ -97,14 +88,14 @@ function M.updateBeam(wandTipPosition)
 	if wandTipPosition ~= nil and currentBeamComponent ~= nil then
 		local startPosition = currentBeamComponent:K2_GetComponentLocation()		
 		local endPosition = wandTipPosition
-		
+
 		local rotator = kismet_math_library:FindLookAtRotation(startPosition, endPosition)
 		local roll = rotator.Roll
 		rotator.Roll = 90 - rotator.Pitch
 		rotator.Yaw = rotator.Yaw - 90
 		rotator.Pitch = roll
 		currentBeamComponent:K2_SetWorldRotation(rotator, false, reusable_hit_result, false)
-		
+
 		local distance = kismet_math_library:Vector_Distance(startPosition, endPosition)
 		local scale =  currentBeamComponent:K2_GetComponentScale()
 		scale.Z = distance * lengthToScaleRatio
@@ -118,7 +109,6 @@ local function drawGlyphStroke(position, nextPosition, length)
 	local static_mesh_component_c = uevr.api:find_uobject("Class /Script/Engine.StaticMeshComponent")
 
 	local beamScale = 0.3
-	--local beamTransform = StructObject.new(ftransform_c)
 	local beamTransform = uevrUtils.get_reuseable_struct_object("ScriptStruct /Script/CoreUObject.Transform")
 	beamTransform.Translation = position
 	beamTransform.Rotation.W = 1.0
@@ -128,14 +118,14 @@ local function drawGlyphStroke(position, nextPosition, length)
 	staticMesh = uevr.api:find_uobject("StaticMesh /Game/VFX/Meshes/Static/VFX_SM_LightPillar_NoSides.VFX_SM_LightPillar_NoSides") 
 	vectorComponent:SetStaticMesh(staticMesh, true)
 	vectorComponent:SetCollisionEnabled(false,false)
-	
+
 	local rotator = kismet_math_library:FindLookAtRotation(position, nextPosition)
 	local roll = rotator.Roll
 	rotator.Roll = 90 - rotator.Pitch
 	rotator.Yaw = rotator.Yaw - 90
 	rotator.Pitch = roll
 	vectorComponent:K2_SetWorldRotation(rotator, false, reusable_hit_result, false)
-	
+
 	local scale =  vectorComponent:K2_GetComponentScale()
 	scale.Z = length * lengthToScaleRatio
 	vectorComponent:SetRelativeScale3D(scale)
@@ -147,8 +137,6 @@ end
 local offsetRight = -40 -- -70
 local offsetForward = 230
 local offsetUp = 30
--- local angles = {30, 145, -145 ,145}
--- local lengths = {40 , 40, 80 ,40}
 function M.drawGlyph(angles, lengths, forwardVector, position)
 	
 	if lengths == nil then
@@ -166,7 +154,7 @@ function M.drawGlyph(angles, lengths, forwardVector, position)
 	local pos = position + (forwardVector * offsetForward)	
 	local rightVector = crossProduct({forwardVector.X,forwardVector.Y,forwardVector.Z},{0,0,1})
 	startPosition:set(pos.X - (rightVector[1] * offsetRight), pos.Y - (rightVector[2] * offsetRight), pos.Z - (rightVector[3] * offsetRight))
-	
+
 	local currentAngle = 0
 	local minX = position.X --make all glyphs center aligned
 	local maxX = position.X 
@@ -179,11 +167,11 @@ function M.drawGlyph(angles, lengths, forwardVector, position)
 		--0 and 360 angles cause rendering issues gimballock?
 		if currentAngle == 0 then currentAngle = 1 end
 		if currentAngle == 360 then currentAngle = 359 end
-		
+
 		--rotate a straight up vector by an angle around the forward vector's axis
 		local upVector = rotateVector({0,0,1}, {-forwardVector.X,-forwardVector.Y,-forwardVector.Z}, currentAngle) 
 		vectors[index] = { {startPosition.X, startPosition.Y, startPosition.Z}, {startPosition.X + (upVector[1] * lengths[index]),startPosition.Y + (upVector[2] * lengths[index]),startPosition.Z + (upVector[3] * lengths[index])} }
-		
+
 		if vectors[index][1][1] > maxX then maxX = vectors[index][1][1] end 
 		if vectors[index][2][1] > maxX then maxX = vectors[index][2][1] end 
 		if vectors[index][1][1] < minX then minX = vectors[index][1][1] end 
@@ -194,10 +182,10 @@ function M.drawGlyph(angles, lengths, forwardVector, position)
 		if vectors[index][2][2] < minY then minY = vectors[index][2][2] end 
 		if vectors[index][1][3] > maxZ then maxZ = vectors[index][1][3] end 
 		if vectors[index][2][3] > maxZ then maxZ = vectors[index][2][3] end 
-		
+
 		startPosition:set(vectors[index][2][1], vectors[index][2][2], vectors[index][2][3])
 	end
-	
+
 	local xOffset = position.X - ((maxX + minX) / 2)
 	local yOffset = position.Y - ((maxY + minY) / 2)
 	local zOffset = position.Z - maxZ

@@ -56,13 +56,15 @@ end
 
 function M.updateGestureDetection(deltaTime, directionVector, flickThreshold)
 	if inCooldown then return false, false end
+
 	local gestureDetected = false
 	local upDirection = false
-    -- Normalize the direction vector
+
+	-- Normalize the direction vector
     local magnitude = math.sqrt(directionVector.X^2 + directionVector.Y^2 + directionVector.Z^2)
-    if magnitude > 0 then
-        directionVector = {X = directionVector.X / magnitude, Y = directionVector.Y / magnitude, Z = directionVector.Z / magnitude}
-    end
+	if magnitude > 0 then
+		directionVector = {X = directionVector.X / magnitude, Y = directionVector.Y / magnitude, Z = directionVector.Z / magnitude}
+	end
 
     -- Add the direction vector to the list with the elapsed time
     elapsedTime = elapsedTime + deltaTime
@@ -82,42 +84,24 @@ function M.updateGestureDetection(deltaTime, directionVector, flickThreshold)
 
         -- Calculate the angle between the direction vectors
         local angle = math.acos(dotProduct) * (180 / math.pi)
-		
-
         if angle > flickThreshold then
             -- Check if a flick was not already detected in this motion
             if not flickDetected then
                 flickDetected = true
                 motionActive = true
                 --print("Flick gesture detected!\n")
-				-- if directions[#directions].Z - directions[1].Z > 0 then
-					-- upDirection = true
-				-- end
 				if signedAngleBetweenVectors({0,0,1}, {directionVector.X,directionVector.Y,directionVector.Z}) < 30 then
 					--print("Yank gesture detected\n")
 					upDirection = true
 				else
 					--print("Flick gesture detected\n")
 				end
-				
-				-- signedAngleBetweenVectors({0,0,1}, {directionVector.X,directionVector.Y,directionVector.Z})
-				-- signedAngleBetweenVectors({0,1,0}, {directionVector.X,directionVector.Y,directionVector.Z})
-				-- signedAngleBetweenVectors({1,0,0}, {directionVector.X,directionVector.Y,directionVector.Z})
-                -- print("Angle: " .. angle .. " degrees, isUp " , upDirection , "\n")
-				-- local crossProd = crossProduct({0,0,1}, {directionVector.X,directionVector.Y,directionVector.Z})
-				-- print("A",crossProd[1],crossProd[2],crossProd[3],"\n")
-				-- crossProd = crossProduct({0,1,0}, {directionVector.X,directionVector.Y,directionVector.Z})
-				-- print("B",crossProd[1],crossProd[2],crossProd[3],"\n")
-				-- crossProd = crossProduct({1,0,0}, {directionVector.X,directionVector.Y,directionVector.Z})
-				-- print("C",crossProd[1],crossProd[2],crossProd[3],"\n")
-
-
 				gestureDetected = true
-            end
-        else
-            motionActive = false
-        end
-    end
+			end
+		else
+			motionActive = false
+		end
+	end
 
     -- Limit the size of the directions list to avoid memory overflow
     if #directions > maxDirections then
